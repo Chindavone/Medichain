@@ -1,0 +1,21 @@
+{
+  "name": "medichain",
+  "private": true,
+  "scripts": {
+    "db": "docker compose up -d db",
+    "chain": "hardhat node",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "server": "node --env-file=.env server/index.js",
+    "web": "npm --prefix web run dev",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "hardhat": "^2.29.1"
+  },
+  "dependencies": {
+    "ethers": "^6.17.0",
+    "express": "^5.2.1",
+    "pg": "^8.23.1"
+  }
+}
