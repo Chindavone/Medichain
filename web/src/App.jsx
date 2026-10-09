@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, walletChainStatus, networkMessage, switchToHardhat,
+  api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, restoreSession, walletChainStatus, networkMessage, switchToHardhat,
   isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, SCOPES, ROLE_LABEL, contractAddress,
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
@@ -412,13 +412,23 @@ export default function App() {
     fetch("/api/health").then((r) => r.json()).then(setHealth).catch(() => setHealth({ db: false, chain: false, api: false }));
   }, []);
 
-  const loadMe = useCallback(async (address) => {
-    const m = await signIn(address);
+  const applyMe = useCallback((m) => {
     setMe(m);
     setTab((t) => (TABS[m.role].some(([k]) => k === t) ? t : TABS[m.role][0][0]));
     loadDirectory();
     return m;
   }, [loadDirectory]);
+  const loadMe = useCallback(async (address) => applyMe(await signIn(address)), [applyMe]);
+
+  // Page reload: pick the session back up silently if MetaMask still has this site connected.
+  useEffect(() => {
+    restoreSession().then(async (s) => {
+      if (!s) return;
+      setAccount(s.address);
+      setNetStatus(await walletChainStatus().catch(() => null));
+      applyMe(s.me);
+    }).catch(() => {});
+  }, [applyMe]);
 
   const connect = async () => {
     setError(null);

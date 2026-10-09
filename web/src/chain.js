@@ -124,8 +124,29 @@ export async function api(path, { method = "GET", body } = {}) {
   return data;
 }
 
+// Session token per wallet, kept across reloads until it expires (8h) or the user disconnects.
+const store = {
+  get: (a) => { try { return localStorage.getItem(`mc-token-${a}`); } catch { return null; } },
+  set: (a, t) => { try { localStorage.setItem(`mc-token-${a}`, t); } catch {} },
+  del: (a) => { try { localStorage.removeItem(`mc-token-${a}`); } catch {} },
+};
+
+// Resume without any MetaMask prompt: only if the wallet is still connected to this site and the token is valid.
+export async function restoreSession() {
+  if (!hasWallet()) return null;
+  const [account] = await window.ethereum.request({ method: "eth_accounts" });
+  const address = account && ethers.getAddress(account);
+  const cached = address && store.get(address);
+  if (!cached) return null;
+  setToken(cached);
+  try { return { address, me: await api("/me") }; } catch (e) {
+    if (e.status === 401) { store.del(address); setToken(null); return null; }
+    throw e;
+  }
+}
+
 export async function signIn(address) {
-  const cached = sessionStorage.getItem(`mc-token-${address}`);
+  const cached = store.get(address);
   if (cached) {
     setToken(cached);
     try { return await api("/me"); } catch (e) { if (e.status !== 401) throw e; }
@@ -133,13 +154,13 @@ export async function signIn(address) {
   const { message } = await api("/auth/nonce", { method: "POST", body: { address } });
   const signature = await window.ethereum.request({ method: "personal_sign", params: [ethers.hexlify(ethers.toUtf8Bytes(message)), address] });
   const { token: t } = await api("/auth/verify", { method: "POST", body: { address, signature } });
-  sessionStorage.setItem(`mc-token-${address}`, t);
+  store.set(address, t);
   setToken(t);
   return api("/me");
 }
 
 export function signOut(address) {
-  sessionStorage.removeItem(`mc-token-${address}`);
+  store.del(address);
   setToken(null);
 }
 
