@@ -28,7 +28,7 @@ class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-function createApp({ pool, provider, contractAddress, dataKey, sessionSecret }) {
+function createApp({ pool, provider, contractAddress, chainId = 31337, dataKey, sessionSecret }) {
   const contract = new ethers.Contract(contractAddress, ABI, provider);
   const key = Buffer.from(dataKey, "hex");
   if (key.length !== 32) throw new Error("DATA_KEY must be 32 bytes hex");
@@ -90,6 +90,8 @@ function createApp({ pool, provider, contractAddress, dataKey, sessionSecret }) 
     id: r.id, kind: r.kind, author: r.author, hash: r.hash, supersedes: r.supersedes,
     createdAt: r.created_at, canonical: decrypt(r.body),
   });
+
+  app.get("/api/config", (_req, res) => res.json({ address: contractAddress, chainId }));
 
   app.get("/api/health", route(async (_req, res) => {
     const out = { db: false, chain: false };

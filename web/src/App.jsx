@@ -10,7 +10,7 @@ function useTxRunner() {
   const [txs, setTxs] = useState([]);
   const patch = (id, p) => setTxs((l) => l.map((t) => (t.id === id ? { ...t, ...p } : t)));
   const run = useCallback(async (label, send) => {
-    const id = crypto.randomUUID();
+    const id = `${Date.now()}-${Math.random()}`; // crypto.randomUUID needs HTTPS
     setTxs((l) => [{ id, label, status: "wallet" }, ...l].slice(0, 5));
     try {
       const tx = await send(await writer());

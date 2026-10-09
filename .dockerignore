@@ -1,7 +1,10 @@
 node_modules
+web/node_modules
+web/dist
 artifacts
 cache
 .env
-.env.prod
-web/dist
+.env.*
 deployment.json
+.git
+.claude

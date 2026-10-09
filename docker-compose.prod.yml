@@ -1,0 +1,33 @@
+# POC stack: one host, simulated data only. Run deploy/deploy.sh — it creates .env.prod on first run.
+services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env.prod
+    environment: { POSTGRES_USER: medichain, POSTGRES_DB: medichain }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    restart: unless-stopped
+
+  # Anvil keeps chain state on disk (Hardhat node does not); same test accounts and chain id 31337.
+  chain:
+    image: ghcr.io/foundry-rs/foundry:stable
+    user: root
+    entrypoint: ["anvil"]
+    command: ["--host", "0.0.0.0", "--chain-id", "31337", "--state", "/data/state.json", "--state-interval", "30"]
+    volumes: [chaindata:/data]
+    restart: unless-stopped
+
+  api:
+    build: { context: ., dockerfile: deploy/api.Dockerfile }
+    env_file: .env.prod
+    environment: { RPC_URL: "http://chain:8545", DEPLOYMENT_FILE: /shared/deployment.json }
+    volumes: [shared:/shared]
+    depends_on: [db, chain]
+    restart: unless-stopped
+
+  web:
+    build: { context: ., dockerfile: deploy/web.Dockerfile }
+    ports: ["80:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes: { pgdata: {}, chaindata: {}, shared: {} }

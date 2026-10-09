@@ -1,8 +1,11 @@
 // Wallet, contract and API plumbing. Reads go straight to the Hardhat RPC; writes go through MetaMask.
 import { ethers } from "ethers";
-import deployment from "./deployment.json";
-
-export const CHAIN_ID = deployment.chainId;
+// Contract address and chain id come from the API at startup, so one web build works on any server.
+// The chain RPC is always proxied at /rpc (vite in dev, nginx in production).
+export let CHAIN_ID = null;
+export let reader = null;
+export let contractAddress = null;
+export const RPC_URL = `${location.origin}/rpc`;
 export const SCOPES = [
   { bit: 1, label: "ການກວດ ແລະ ຢາ", hint: "ອາການ, ວິນິດໄສ, ຢາ, ແຜນການຮັກສາ" },
   { bit: 2, label: "ສັນຍານຊີບ", hint: "ຄວາມດັນ, ຊີບພະຈອນ, ອຸນຫະພູມ, ນ້ຳໜັກ" },
@@ -27,9 +30,14 @@ const ABI = [
   "event RecordAnchored(address indexed patient, bytes32 indexed hash, address indexed author)",
 ];
 
-const rpc = new ethers.JsonRpcProvider(deployment.rpcUrl, CHAIN_ID, { staticNetwork: true });
-export const reader = new ethers.Contract(deployment.address, ABI, rpc);
-export const contractAddress = deployment.address;
+export async function loadConfig() {
+  const res = await fetch("/api/config");
+  if (!res.ok) throw new Error("API not reachable");
+  const cfg = await res.json();
+  CHAIN_ID = cfg.chainId;
+  contractAddress = cfg.address;
+  reader = new ethers.Contract(cfg.address, ABI, new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID, { staticNetwork: true }));
+}
 
 export const hasWallet = () => typeof window !== "undefined" && !!window.ethereum;
 export const short = (a) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "");
@@ -53,7 +61,7 @@ export async function switchToHardhat() {
     if (e.code !== 4902) throw e;
     await window.ethereum.request({
       method: "wallet_addEthereumChain",
-      params: [{ chainId, chainName: "Hardhat Local", rpcUrls: [deployment.rpcUrl], nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 } }],
+      params: [{ chainId, chainName: "Hardhat Local", rpcUrls: [RPC_URL], nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 } }],
     });
   }
 }

@@ -23,9 +23,8 @@ async function main() {
   await mc.waitForDeployment();
   for (const [i, role] of STAFF) await (await mc.setRole(signers[i].address, role)).wait();
 
-  const deployment = { address: await mc.getAddress(), chainId: 31337, rpcUrl: "http://127.0.0.1:8545" };
-  fs.writeFileSync("deployment.json", JSON.stringify(deployment, null, 2));
-  fs.writeFileSync("web/src/deployment.json", JSON.stringify(deployment, null, 2));
+  const deployment = { address: await mc.getAddress(), chainId: Number((await hre.ethers.provider.getNetwork()).chainId) };
+  fs.writeFileSync(process.env.DEPLOYMENT_FILE || "deployment.json", JSON.stringify(deployment, null, 2));
   console.log("MediChain deployed at", deployment.address);
 
   const url = process.env.DATABASE_URL || "postgres://medichain:medichain@localhost:5433/medichain";
