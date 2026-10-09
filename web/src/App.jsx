@@ -340,9 +340,9 @@ function AdminPanel({ staffList, hospitals, reloadStaff, onError }) {
 }
 
 /* ---------- Staff: find a book by Patient ID ---------- */
-function StaffSearch({ me, onError }) {
-  const [q, setQ] = useState("");
-  const [pid, setPid] = useState(null);
+function StaffSearch({ me, onError, initialPid }) {
+  const [q, setQ] = useState(initialPid || "");
+  const [pid, setPid] = useState(initialPid || null);
   return (
     <>
       <form className="search" onSubmit={(e) => { e.preventDefault(); setPid(q.trim().toUpperCase()); }}>
@@ -404,6 +404,8 @@ export default function App() {
   const [health, setHealth] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
+  // Set when a doctor arrives from a patient's QR code (?pid=MC-…).
+  const [pidParam] = useState(() => new URLSearchParams(location.search).get("pid")?.trim().toUpperCase() || null);
   const [staffList, setStaffList] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const loadDirectory = useCallback(() => Promise.all([api("/staff").then(setStaffList), api("/hospitals").then(setHospitals)]).catch(() => {}), []);
@@ -505,6 +507,7 @@ export default function App() {
                 <h1 className="cover-title">ປຶ້ມຕິດຕາມ<br />ກວດພະຍາດ</h1>
                 <p className="lede">ປຶ້ມປະຫວັດການຮັກສາທີ່ທ່ານເປັນເຈົ້າຂອງ. ທ່ານເລືອກວ່າແພດຄົນໃດເບິ່ງໄດ້, ແລະ ທຸກບັນທຶກມີຕາປະທັບເທິງ Blockchain ທີ່ບໍ່ມີໃຜແກ້ໄຂໄດ້.</p>
                 <button className="btn primary big" onClick={connect} disabled={connecting}>{connecting ? "ກຳລັງເຊື່ອມຕໍ່…" : "ເຊື່ອມຕໍ່ MetaMask"}</button>
+                {pidParam && <p className="notice qr-notice">ເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີແພດ ຫຼື ພະຍາບານ ເພື່ອເປີດປຶ້ມ <b className="mono">{pidParam}</b></p>}
                 <p><button className="link guide-link" onClick={() => setGuideOpen(true)}>ຄັ້ງທຳອິດ? ອ່ານຄູ່ມືການເຊື່ອມຕໍ່ ແລະ Flow ການໃຊ້ງານ</button></p>
                 <p className="fine">ສະພາບແວດລ້ອມທົດລອງ · ໃຊ້ຂໍ້ມູນຈຳລອງເທົ່ານັ້ນ · Contract <span className="mono">{short(contractAddress)}</span></p>
               </div>
@@ -521,7 +524,7 @@ export default function App() {
               {tab === "audit" && (me.pid ? <AuditPanel me={me} staffList={staffList} /> : <p className="empty">ຍັງບໍ່ມີປຶ້ມ.</p>)}
               {tab === "guide" && <Guide />}
               {tab === "verify" && <VerifyPanel staffList={staffList} />}
-              {tab === "search" && <StaffSearch me={me} onError={setError} />}
+              {tab === "search" && <StaffSearch me={me} onError={setError} initialPid={pidParam} />}
               {tab === "staff" && <AdminPanel staffList={staffList} hospitals={hospitals} reloadStaff={loadDirectory} onError={setError} />}
             </>
           )}

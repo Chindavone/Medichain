@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
 import { api, assertNetwork, reader, laoDate, laoDateTime, short, KIND_SCOPE, SCOPES } from "./chain.js";
 
 export const TxContext = createContext(null);
@@ -32,7 +33,36 @@ function CoverHead() {
   );
 }
 
-export function Cover({ pid, profile, wallet }) {
+/* ---------- QR for the doctor: opens this book straight in MetaMask's mobile browser ---------- */
+export const bookLink = (pid) => `${location.origin}/?pid=${encodeURIComponent(pid)}`;
+const metamaskLink = (pid) => `https://metamask.app.link/dapp/${location.host}/?pid=${encodeURIComponent(pid)}`;
+
+function BookQR({ pid }) {
+  const [svg, setSvg] = useState("");
+  const dialog = useRef(null);
+  useEffect(() => {
+    QRCode.toString(metamaskLink(pid), { type: "svg", margin: 1, errorCorrectionLevel: "M", color: { dark: "#142a63", light: "#ffffff" } })
+      .then(setSvg, () => setSvg(""));
+  }, [pid]);
+  if (!svg) return null;
+  return (
+    <div className="cover-qr">
+      <button type="button" className="qr-thumb" aria-label="ສະແດງ QR ໃຫຍ່" onClick={() => dialog.current.showModal()}
+        dangerouslySetInnerHTML={{ __html: svg }} />
+      <p>ໃຫ້ທ່ານໝໍສະແກນ<br /><button type="button" className="link" onClick={() => dialog.current.showModal()}>ສະແດງ QR ໃຫຍ່</button></p>
+      <dialog ref={dialog} className="qr-dialog" onClick={(e) => e.target === dialog.current && dialog.current.close()}>
+        <p className="qr-pid mono">{pid}</p>
+        <div className="qr-big" dangerouslySetInnerHTML={{ __html: svg }} />
+        <p className="fine">ທ່ານໝໍສະແກນດ້ວຍກ້ອງມືຖື → ເປີດໃນແອັບ MetaMask → ເຂົ້າສູ່ລະບົບ → ປຶ້ມນີ້ເປີດທັນທີ.<br />
+          QR ບໍ່ໄດ້ໃຫ້ສິດ — ທ່ານຕ້ອງເປີດສິດໃຫ້ທ່ານໝໍໃນແຖບ “ສິດການເຂົ້າເຖິງ” ກ່ອນ.</p>
+        <p className="fine">ລິ້ງສຳລັບຄອມພິວເຕີ: <span className="mono">{bookLink(pid)}</span></p>
+        <button className="btn primary" onClick={() => dialog.current.close()}>ປິດ</button>
+      </dialog>
+    </div>
+  );
+}
+
+export function Cover({ pid, profile, wallet, showQR }) {
   return (
     <section className="cover" aria-label="Patient book cover">
       <CoverHead />
@@ -44,6 +74,7 @@ export function Cover({ pid, profile, wallet }) {
       )}
       <h1 className="cover-title">ປຶ້ມຕິດຕາມ<br />ກວດພະຍາດ</h1>
       <p className="cover-no">ເລກທີ <span className="mono">{pid}</span></p>
+      {showQR && <BookQR pid={pid} />}
       <dl className="cover-fields">
         <div><dt>ຊື່ ແລະ ນາມສະກຸນ</dt><dd>{profile.name} <span className="age">ອາຍຸ {age(profile.dob)}</span></dd></div>
         {COVER_FIELDS.slice(1).map(([k, label]) => (
@@ -304,7 +335,7 @@ export function BookView({ pid, me, onError }) {
 
   return (
     <div className="book">
-      <Cover pid={book.pid} profile={book.profile} wallet={book.wallet} />
+      <Cover pid={book.pid} profile={book.profile} wallet={book.wallet} showQR={book.wallet === me.address} />
       <div className="book-inner">
         {isStaff && (
           <div className="access-strip">
