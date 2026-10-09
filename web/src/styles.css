@@ -334,3 +334,13 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .qr-pid { font-size: 20px; font-weight: 500; color: var(--cover); margin: 0 0 12px; }
 .qr-dialog .mono { overflow-wrap: anywhere; }
 .qr-notice { margin: 0 auto 8px; text-align: left; font-size: 14px; }
+
+/* ---------- camera scanner ---------- */
+.scanner h2 { font: 700 18px var(--display); color: var(--cover); margin: 0 0 12px; }
+.viewfinder { position: relative; width: min(340px, 100%, 60vh); aspect-ratio: 1; margin: 0 auto; background: #000; border-radius: 6px; overflow: hidden; }
+.viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.viewfinder .frame { position: absolute; inset: 16%; border: 3px solid #fff; border-radius: 8px; box-shadow: 0 0 0 999px #0006; }
+@media (prefers-reduced-motion: no-preference) {
+  .viewfinder .frame::after { content: ""; position: absolute; left: 6%; right: 6%; height: 2px; background: var(--stamp); top: 10%; animation: sweep 1.8s ease-in-out infinite alternate; }
+}
+@keyframes sweep { to { top: 88%; } }

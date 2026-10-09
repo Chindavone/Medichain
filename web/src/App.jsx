@@ -5,6 +5,7 @@ import {
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
 import Guide from "./Guide.jsx";
+import Scanner, { pidFromText } from "./Scanner.jsx";
 
 /* ---------- Transactions: every wallet action reports its real outcome (AT-09) ---------- */
 function useTxRunner() {
@@ -343,13 +344,18 @@ function AdminPanel({ staffList, hospitals, reloadStaff, onError }) {
 function StaffSearch({ me, onError, initialPid }) {
   const [q, setQ] = useState(initialPid || "");
   const [pid, setPid] = useState(initialPid || null);
+  const [scanning, setScanning] = useState(false);
+  const onScan = useCallback((p) => { setScanning(false); setQ(p); setPid(p); }, []);
+  const closeScanner = useCallback(() => setScanning(false), []);
   return (
     <>
-      <form className="search" onSubmit={(e) => { e.preventDefault(); setPid(q.trim().toUpperCase()); }}>
+      <form className="search" onSubmit={(e) => { e.preventDefault(); setPid(pidFromText(q) || q.trim().toUpperCase()); }}>
         <label htmlFor="pid">ເປີດປຶ້ມດ້ວຍເລກທີ</label>
         <input id="pid" className="mono" value={q} onChange={(e) => setQ(e.target.value)} placeholder="MC-2026-123456" required />
         <button className="btn primary">ເປີດປຶ້ມ</button>
+        <button type="button" className="btn scan-btn" onClick={() => setScanning(true)}>📷 ສະແກນ QR</button>
       </form>
+      {scanning && <Scanner onScan={onScan} onClose={closeScanner} />}
       {pid ? <BookView key={pid} pid={pid} me={me} onError={onError} /> : (
         <p className="empty">ຂໍເລກທີປຶ້ມຈາກຄົນເຈັບ. ທ່ານຈະເຫັນພຽງຂໍ້ມູນທີ່ຄົນເຈັບເປີດສິດໃຫ້.</p>
       )}
