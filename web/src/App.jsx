@@ -4,6 +4,7 @@ import {
   isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, SCOPES, ROLE_LABEL, contractAddress,
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
+import Guide from "./Guide.jsx";
 
 /* ---------- Transactions: every wallet action reports its real outcome (AT-09) ---------- */
 function useTxRunner() {
@@ -387,10 +388,10 @@ function PatientHome({ me, refresh, onError }) {
 
 /* ---------- Shell ---------- */
 const TABS = {
-  none: [["book", "ປຶ້ມຂອງຂ້ອຍ"], ["access", "ສິດການເຂົ້າເຖິງ"], ["audit", "ປະຫວັດການເຂົ້າເຖິງ"], ["verify", "ກວດສອບເອກະສານ"]],
-  doctor: [["search", "ປຶ້ມຄົນເຈັບ"], ["verify", "ກວດສອບເອກະສານ"]],
-  nurse: [["search", "ປຶ້ມຄົນເຈັບ"], ["verify", "ກວດສອບເອກະສານ"]],
-  admin: [["staff", "ບຸກຄະລາກອນ"], ["verify", "ກວດສອບເອກະສານ"]],
+  none: [["book", "ປຶ້ມຂອງຂ້ອຍ"], ["access", "ສິດການເຂົ້າເຖິງ"], ["audit", "ປະຫວັດການເຂົ້າເຖິງ"], ["verify", "ກວດສອບເອກະສານ"], ["guide", "ຄູ່ມື"]],
+  doctor: [["search", "ປຶ້ມຄົນເຈັບ"], ["verify", "ກວດສອບເອກະສານ"], ["guide", "ຄູ່ມື"]],
+  nurse: [["search", "ປຶ້ມຄົນເຈັບ"], ["verify", "ກວດສອບເອກະສານ"], ["guide", "ຄູ່ມື"]],
+  admin: [["staff", "ບຸກຄະລາກອນ"], ["verify", "ກວດສອບເອກະສານ"], ["guide", "ຄູ່ມື"]],
 };
 
 export default function App() {
@@ -402,6 +403,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [health, setHealth] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [staffList, setStaffList] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const loadDirectory = useCallback(() => Promise.all([api("/staff").then(setStaffList), api("/hospitals").then(setHospitals)]).catch(() => {}), []);
@@ -476,7 +478,12 @@ export default function App() {
         {error && <div className="banner soft" role="alert">{error}<button className="x" aria-label="Dismiss" onClick={() => setError(null)}>×</button></div>}
 
         <main>
-          {!me ? (
+          {!me && guideOpen ? (
+            <>
+              <button className="link back" onClick={() => setGuideOpen(false)}>← ກັບໜ້າເຂົ້າສູ່ລະບົບ</button>
+              <Guide />
+            </>
+          ) : !me ? (
             <section className="landing">
               <div className="cover cover-landing">
                 <div className="cover-head">
@@ -486,6 +493,7 @@ export default function App() {
                 <h1 className="cover-title">ປຶ້ມຕິດຕາມ<br />ກວດພະຍາດ</h1>
                 <p className="lede">ປຶ້ມປະຫວັດການຮັກສາທີ່ທ່ານເປັນເຈົ້າຂອງ. ທ່ານເລືອກວ່າແພດຄົນໃດເບິ່ງໄດ້, ແລະ ທຸກບັນທຶກມີຕາປະທັບເທິງ Blockchain ທີ່ບໍ່ມີໃຜແກ້ໄຂໄດ້.</p>
                 <button className="btn primary big" onClick={connect} disabled={connecting}>{connecting ? "ກຳລັງເຊື່ອມຕໍ່…" : "ເຊື່ອມຕໍ່ MetaMask"}</button>
+                <p><button className="link guide-link" onClick={() => setGuideOpen(true)}>ຄັ້ງທຳອິດ? ອ່ານຄູ່ມືການເຊື່ອມຕໍ່ ແລະ Flow ການໃຊ້ງານ</button></p>
                 <p className="fine">ສະພາບແວດລ້ອມທົດລອງ · ໃຊ້ຂໍ້ມູນຈຳລອງເທົ່ານັ້ນ · Contract <span className="mono">{short(contractAddress)}</span></p>
               </div>
             </section>
@@ -499,6 +507,7 @@ export default function App() {
               {tab === "book" && <PatientHome me={me} refresh={() => loadMe(account)} onError={setError} />}
               {tab === "access" && (me.registered ? <AccessPanel me={me} staffList={staffList} hospitals={hospitals} /> : <p className="empty">ສ້າງ ແລະ ລົງທະບຽນປຶ້ມກ່ອນ ຈຶ່ງເປີດສິດໃຫ້ແພດໄດ້.</p>)}
               {tab === "audit" && (me.pid ? <AuditPanel me={me} staffList={staffList} /> : <p className="empty">ຍັງບໍ່ມີປຶ້ມ.</p>)}
+              {tab === "guide" && <Guide />}
               {tab === "verify" && <VerifyPanel staffList={staffList} />}
               {tab === "search" && <StaffSearch me={me} onError={setError} />}
               {tab === "staff" && <AdminPanel staffList={staffList} hospitals={hospitals} reloadStaff={loadDirectory} onError={setError} />}

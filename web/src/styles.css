@@ -12,7 +12,7 @@
   --ok: #1d7a4f;
   --display: "Noto Sans Lao Looped", "Noto Sans Lao", sans-serif;
   --body: "Noto Sans Lao", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --mono: "IBM Plex Mono", ui-monospace, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   color-scheme: light;
 }
 
@@ -281,3 +281,44 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .page-row > div:first-child { border-right: 0; border-bottom: 1px dashed var(--rule); }
   .page-head > div:last-child { display: none; }
 }
+
+/* ---------- guide ---------- */
+.guide { display: grid; gap: 20px; max-width: 960px; margin: 0 auto; }
+.guide-head h1 { font: 800 clamp(28px, 4vw, 36px) var(--display); color: var(--cover); margin: 0; }
+.guide-head p { margin: 4px 0 0; color: var(--muted); }
+.guide h3 { font: 700 16px var(--display); color: var(--cover); margin: 0 0 6px; }
+.guide a { color: var(--cover); }
+.back { margin-bottom: 14px; display: inline-block; }
+.guide-link { font-size: 14px; margin-top: 14px; }
+
+.who-chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 10px; border-radius: 99px; color: #fff; background: var(--muted); }
+.who-chip.patient { background: var(--cover); }
+.who-chip.staff { background: var(--ok); }
+.chain-tag { display: inline-block; font: 600 12px var(--mono); color: var(--stamp); border: 1.5px solid var(--stamp); border-radius: 3px; padding: 0 6px; }
+
+/* the flow: a numbered track, because the order is the point */
+.flow { list-style: none; counter-reset: step; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.flow-step { counter-increment: step; position: relative; background: #fff; border: 1.5px solid var(--rule); border-top: 4px solid var(--muted); border-radius: 4px; padding: 30px 14px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.flow-step.patient { border-top-color: var(--cover); }
+.flow-step.staff { border-top-color: var(--ok); }
+.flow-step::before { content: counter(step); position: absolute; top: -16px; left: 12px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--rose); border: 2px solid currentColor; font: 700 14px var(--mono); color: var(--cover); }
+.flow-step.staff::before { color: var(--ok); }
+.flow-step.anyone::before { color: var(--muted); }
+.flow-step b { font: 700 15px var(--display); }
+.flow-step p { margin: 0; font-size: 13.5px; color: var(--muted); flex: 1; }
+
+.copy { display: inline-flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.copy code { background: #f3f5fa; padding: 1px 6px; border-radius: 3px; overflow-wrap: anywhere; }
+.net-values { margin-top: 10px; }
+.accounts { margin: 12px 0; }
+.notice.small { padding: 8px 12px; font-size: 13px; max-width: none; }
+.steps { margin: 0; padding-left: 20px; }
+.steps li { margin-bottom: 6px; }
+.roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.roles ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.roles li { margin-bottom: 6px; }
+.trouble { margin: 0; display: grid; gap: 10px; }
+.trouble div { display: grid; grid-template-columns: minmax(160px, 34%) 1fr; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.trouble dt { font-weight: 600; color: var(--stamp); }
+.trouble dd { margin: 0; }
+@media (max-width: 560px) { .trouble div { grid-template-columns: 1fr; gap: 2px; } }
