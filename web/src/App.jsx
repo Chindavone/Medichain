@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, currentChainId, switchToHardhat,
+  api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, walletChainStatus, networkMessage, switchToHardhat,
   isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, SCOPES, ROLE_LABEL, contractAddress,
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
@@ -397,7 +397,7 @@ const TABS = {
 export default function App() {
   const txr = useTxRunner();
   const [account, setAccount] = useState(null);
-  const [chainId, setChainId] = useState(null);
+  const [netStatus, setNetStatus] = useState(null);
   const [me, setMe] = useState(null);
   const [tab, setTab] = useState(null);
   const [error, setError] = useState(null);
@@ -427,7 +427,7 @@ export default function App() {
     try {
       const a = await requestAccount();
       setAccount(a);
-      setChainId(await currentChainId());
+      setNetStatus(await walletChainStatus().catch(() => null));
       await loadMe(a);
     } catch (e) {
       setError(isRejection(e) ? "ທ່ານປະຕິເສດການເຊື່ອມຕໍ່ ຫຼື ການລົງນາມເຂົ້າສູ່ລະບົບ. ກົດເຊື່ອມຕໍ່ອີກຄັ້ງເມື່ອພ້ອມ." : e.message);
@@ -439,14 +439,14 @@ export default function App() {
   useEffect(() => {
     if (!hasWallet()) return;
     const onAccounts = ([a]) => { setMe(null); setAccount(null); if (a) setError("ບັນຊີໃນ MetaMask ປ່ຽນແລ້ວ. ກົດເຊື່ອມຕໍ່ເພື່ອເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີໃໝ່."); };
-    const onChain = (id) => setChainId(Number(id));
+    const onChain = () => walletChainStatus().then(setNetStatus, () => setNetStatus(null));
     window.ethereum.on("accountsChanged", onAccounts);
     window.ethereum.on("chainChanged", onChain);
     return () => { window.ethereum.removeListener("accountsChanged", onAccounts); window.ethereum.removeListener("chainChanged", onChain); };
   }, []);
 
   const staffMap = useMemo(() => Object.fromEntries(staffList.map((s) => [s.address, s])), [staffList]);
-  const wrongNet = account && chainId !== CHAIN_ID;
+  const wrongNet = account && netStatus && netStatus !== "ok";
   const down = health && !(health.db && health.chain);
 
   return (
@@ -456,7 +456,7 @@ export default function App() {
           <div className="brand"><img className="mark" src="/moh-logo.jpg" alt="ກະຊວງສາທາລະນະສຸກ" /> MediChain <small>ປຶ້ມຕິດຕາມກວດພະຍາດ</small></div>
           {account && (
             <div className="wallet">
-              <span className={`net ${wrongNet ? "bad" : "ok"}`}>{wrongNet ? `Network ຜິດ (${chainId})` : "Hardhat Local · 31337"}</span>
+              <span className={`net ${wrongNet ? "bad" : "ok"}`}>{wrongNet ? "Network ຜິດ" : `MediChain · ${CHAIN_ID}`}</span>
               <span className="addr mono" title={account}>{short(account)}</span>
               {me && <span className="role">{me.staff?.name || ROLE_LABEL[me.role]}{me.staff?.hospital ? ` · ${me.staff.hospital}` : ""}</span>}
               <button className="btn small" onClick={disconnect}>ຕັດການເຊື່ອມຕໍ່</button>
@@ -471,8 +471,10 @@ export default function App() {
         )}
         {wrongNet && (
           <div className="banner" role="alert">
-            MetaMask ຢູ່ Network ອື່ນ. ທຸລະກຳຈະບໍ່ຖືກສົ່ງຈົນກວ່າທ່ານສະຫຼັບໄປ Hardhat Local.
-            <button className="btn small" onClick={() => switchToHardhat().catch((e) => setError(e.message))}>ສະຫຼັບ Network</button>
+            {networkMessage(netStatus)} ທຸລະກຳຈະບໍ່ຖືກສົ່ງຈົນກວ່າຈະແກ້.
+            <button className="btn small" onClick={() => switchToHardhat().then(() => walletChainStatus().then(setNetStatus)).catch((e) => setError(e.message))}>
+              {netStatus === "wrongRpc" ? "ແກ້ RPC" : "ສະຫຼັບ Network"}
+            </button>
           </div>
         )}
         {error && <div className="banner soft" role="alert">{error}<button className="x" aria-label="Dismiss" onClick={() => setError(null)}>×</button></div>}

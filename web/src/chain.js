@@ -53,37 +53,54 @@ export async function requestAccount() {
   return ethers.getAddress(account);
 }
 
+const addNetwork = () => window.ethereum.request({
+  method: "wallet_addEthereumChain",
+  params: [{ chainId: ethers.toQuantity(CHAIN_ID), chainName: "MediChain POC", rpcUrls: [RPC_URL], nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 } }],
+});
+
 export async function switchToHardhat() {
-  const chainId = ethers.toQuantity(CHAIN_ID);
+  // Same chain id but another chain (e.g. a local node at 127.0.0.1:8545): offer this server's RPC.
+  if ((await walletChainStatus()) === "wrongRpc") return addNetwork();
   try {
-    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] });
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ethers.toQuantity(CHAIN_ID) }] });
   } catch (e) {
     if (e.code !== 4902) throw e;
-    await window.ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [{ chainId, chainName: "Hardhat Local", rpcUrls: [RPC_URL], nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 } }],
-    });
+    await addNetwork();
   }
+}
+
+// Chain id alone can't tell two dev chains apart (every Hardhat/Anvil node is 31337),
+// so also compare block 0 as seen by the wallet with block 0 as seen by this server.
+let serverGenesis = null;
+export async function walletChainStatus() {
+  if ((await currentChainId()) !== CHAIN_ID) return "wrongId";
+  serverGenesis ??= (await reader.runner.getBlock(0)).hash;
+  const g = await window.ethereum.request({ method: "eth_getBlockByNumber", params: ["0x0", false] });
+  return g?.hash === serverGenesis ? "ok" : "wrongRpc";
 }
 
 // AT-08: never hand a transaction to a wallet sitting on the wrong network.
 export async function assertNetwork() {
-  if ((await currentChainId()) !== CHAIN_ID) throw new WrongNetwork();
+  const status = await walletChainStatus();
+  if (status !== "ok") throw new WrongNetwork(status);
 }
 export async function writer() {
   await assertNetwork();
   const signer = await new ethers.BrowserProvider(window.ethereum).getSigner();
   return reader.connect(signer);
 }
+export const networkMessage = (status) => status === "wrongRpc"
+  ? `MetaMask ຢູ່ Chain ID ${CHAIN_ID} ແຕ່ RPC ຊີ້ໄປ Blockchain ອື່ນ (ເຊັ່ນ 127.0.0.1:8545). ແກ້ RPC URL ຂອງ Network ນີ້ເປັນ ${RPC_URL} ແລ້ວລອງໃໝ່.`
+  : `MetaMask ບໍ່ໄດ້ຢູ່ Network ຂອງລະບົບ (Chain ID ${CHAIN_ID}). ສະຫຼັບ Network ແລ້ວລອງໃໝ່.`;
 export class WrongNetwork extends Error {
-  constructor() { super("MetaMask ບໍ່ໄດ້ຢູ່ Hardhat Local (31337). ສະຫຼັບ Network ແລ້ວລອງໃໝ່."); }
+  constructor(status) { super(networkMessage(status)); }
 }
 
 export const isRejection = (e) => e?.code === "ACTION_REJECTED" || e?.code === 4001 || e?.info?.error?.code === 4001;
 
 export function txError(e) {
   if (isRejection(e)) return "ຍົກເລີກໃນ MetaMask — ບໍ່ມີການປ່ຽນແປງ.";
-  if (e instanceof WrongNetwork) return "MetaMask ບໍ່ໄດ້ຢູ່ Hardhat Local (31337). ສະຫຼັບ Network ແລ້ວລອງໃໝ່.";
+  if (e instanceof WrongNetwork) return e.message;
   const reason = e?.reason || e?.shortMessage || e?.message || "Unknown error";
   return `ທຸລະກຳບໍ່ສຳເລັດ: ${reason}`;
 }

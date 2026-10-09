@@ -114,6 +114,7 @@ curl -s -X POST localhost/rpc -H 'content-type: application/json' -d '{"jsonrpc"
 | "ບໍ່ພົບ MetaMask" | ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້າຄືນ. ໃນມືຖືໃຫ້ເປີດເວັບຜ່ານ browser ໃນແອັບ MetaMask. |
 | ແຖບແດງ "Network ຜິດ" | ກົດ **ສະຫຼັບ Network**. ລະບົບຈະບໍ່ສົ່ງທຸລະກຳໃນ Network ອື່ນ. |
 | MetaMask ສະແດງ "Network fee" ສີແດງ / ກົດ Confirm ບໍ່ໄດ້ | Wallet ບໍ່ມີ ETH ທົດລອງ — ໃຊ້ບັນຊີ #0–#5 ຫຼື ຂໍໃຫ້ຜູ້ດູແລເຕີມ. |
+| ແຖບແດງ "RPC ຊີ້ໄປ Blockchain ອື່ນ" / "already registered" | Network ໃນ MetaMask ມີ Chain ID 31337 ແຕ່ RPC ເປັນ `127.0.0.1:8545`. ກົດ **ແກ້ RPC** ຫຼື ແກ້ RPC URL ເປັນ `https://<domain>/rpc`. |
 | ທຸລະກຳຄ້າງ / nonce ຜິດ ຫຼັງ reset chain | MetaMask → Settings → Advanced → **Clear activity tab data**. |
 | "ທ່ານບໍ່ມີສິດເຂົ້າເຖິງປຶ້ມນີ້" | ຄົນເຈັບຍັງບໍ່ເປີດສິດ, ສິດໝົດອາຍຸ ຫຼື ຖືກຖອນແລ້ວ. |
 | "ໝົດເວລາເຂົ້າສູ່ລະບົບ" | ກົດ ຕັດການເຊື່ອມຕໍ່ ແລ້ວເຊື່ອມຕໍ່ໃໝ່ (session ໃຊ້ໄດ້ 8 ຊົ່ວໂມງ). |

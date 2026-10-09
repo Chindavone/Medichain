@@ -45,6 +45,7 @@ const TROUBLE = [
   ["ບໍ່ພົບ MetaMask", "ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້າຄືນ. ໃນມືຖືໃຫ້ເປີດເວັບຜ່ານ browser ໃນແອັບ MetaMask."],
   ["ແຖບແດງ “Network ຜິດ”", "ກົດ “ສະຫຼັບ Network”. ລະບົບບໍ່ສົ່ງທຸລະກຳໃນ Network ອື່ນ."],
   ["“Network fee” ສີແດງ, ກົດ Confirm ບໍ່ໄດ້", "Wallet ບໍ່ມີ ETH ທົດລອງ — ໃຊ້ບັນຊີ #0–#5 ຫຼື ຂໍໃຫ້ຜູ້ດູແລເຕີມ."],
+  ["“RPC ຊີ້ໄປ Blockchain ອື່ນ” ຫຼື “already registered”", "Network ໃນ MetaMask ມີ Chain ID ຖືກ ແຕ່ RPC ເປັນ 127.0.0.1:8545 (ເຄື່ອງຕົນເອງ). ກົດ “ແກ້ RPC” ຫຼື MetaMask → Networks → ແກ້ RPC URL ເປັນຄ່າໃນຂໍ້ 1 ຂ້າງເທິງ."],
   ["ທຸລະກຳຄ້າງ ຫຼັງ reset chain", "MetaMask → Settings → Advanced → Clear activity tab data."],
   ["“ທ່ານບໍ່ມີສິດເຂົ້າເຖິງປຶ້ມນີ້”", "ຄົນເຈັບຍັງບໍ່ເປີດສິດ, ສິດໝົດອາຍຸ ຫຼື ຖືກຖອນແລ້ວ."],
   ["“ໝົດເວລາເຂົ້າສູ່ລະບົບ”", "ຕັດການເຊື່ອມຕໍ່ ແລ້ວເຊື່ອມຕໍ່ໃໝ່ (session 8 ຊົ່ວໂມງ)."],
