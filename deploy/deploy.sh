@@ -23,4 +23,7 @@ if ! $C run --rm --no-deps api test -f /shared/deployment.json; then
   $C run --rm api npx hardhat run scripts/deploy.js --network localhost
 fi
 $C up -d
+# Wait for the API behind nginx before reporting success.
+for i in $(seq 1 60); do curl -sf localhost/api/health >/dev/null && break; sleep 1; done
 $C ps
+curl -sf localhost/api/health || { echo "API not healthy — check: $C logs api"; exit 1; }
