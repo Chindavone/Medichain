@@ -149,8 +149,13 @@ describe("MediChain API", function () {
     expect(r.body.records).to.have.length(1); // AT-06
     expect(r.body.profile.name).to.equal("ທົດລອງ ຈຳລອງ");
 
+    let recent = (await call("/recent", { token: doc })).body;
+    expect(recent[0]).to.include({ pid, name: "ທົດລອງ ຈຳລອງ", writes: 1 });
+
     await ctx.mc.connect(ctx.patient).revokeAccess(ctx.doctor.address);
     expect((await call(`/patients/${pid}`, { token: doc })).status).to.equal(403); // AT-05
+    recent = (await call("/recent", { token: doc })).body;
+    expect(recent[0]).to.include({ pid, name: null, scopes: 0 }); // history stays, name hidden after revoke
 
     const audit = await call(`/patients/${pid}/audit`, { token: patientToken });
     expect(audit.body.map((a) => a.action)).to.include.members(["access_denied", "view_book", "add_record"]);

@@ -341,24 +341,62 @@ function AdminPanel({ staffList, hospitals, reloadStaff, onError }) {
 }
 
 /* ---------- Staff: find a book by Patient ID ---------- */
+function RecentBooks({ filter, onOpen }) {
+  const [rows, setRows] = useState(null);
+  useEffect(() => { api("/recent").then(setRows, () => setRows([])); }, []);
+  if (!rows) return <p className="muted">ກຳລັງໂຫຼດປະຫວັດ…</p>;
+  const needle = filter.trim().toLowerCase();
+  const list = rows.filter((r) => !needle || r.pid.toLowerCase().includes(needle) || r.name?.toLowerCase().includes(needle));
+  if (!rows.length) return <p className="empty">ຍັງບໍ່ມີປະຫວັດ. ສະແກນ QR ຫຼື ໃສ່ເລກປຶ້ມ — ປຶ້ມທີ່ທ່ານເປີດຈະຢູ່ທີ່ນີ້.</p>;
+  const now = Date.now() / 1000;
+  return (
+    <section className="card">
+      <h2>ປຶ້ມທີ່ເປີດຫຼ້າສຸດ</h2>
+      {!list.length ? <p className="empty small">ບໍ່ພົບ “{filter}” ໃນປະຫວັດ — ກົດ ເປີດປຶ້ມ ເພື່ອຊອກດ້ວຍເລກທີ.</p> : (
+        <ul className="recent">
+          {list.map((r) => {
+            const open = r.scopes > 0;
+            return (
+              <li key={r.pid}>
+                <button type="button" className={open ? "" : "no-access"} onClick={() => onOpen(r.pid)}>
+                  <span className="recent-name">{r.name || "ບໍ່ມີສິດເຂົ້າເຖິງແລ້ວ"}</span>
+                  <span className="mono small">{r.pid}</span>
+                  <span className="small muted">ເປີດລ່າສຸດ {laoDateTime(r.lastAt)}{r.writes ? ` · ບັນທຶກ ${r.writes} ຄັ້ງ` : ""}</span>
+                  <span className={`status ${open ? "active" : "revoked"}`}>
+                    {open ? (r.expires && r.expires - now < 3 * 86400 ? `ສິດໝົດ ${laoDate(r.expires * 1000)}` : "ມີສິດ") : "ຖອນ/ໝົດສິດ"}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function StaffSearch({ me, onError, initialPid }) {
   const [q, setQ] = useState(initialPid || "");
   const [pid, setPid] = useState(initialPid || null);
   const [scanning, setScanning] = useState(false);
-  const onScan = useCallback((p) => { setScanning(false); setQ(p); setPid(p); }, []);
+  const open = useCallback((p) => { setScanning(false); setQ(p); setPid(p); window.scrollTo({ top: 0 }); }, []);
   const closeScanner = useCallback(() => setScanning(false), []);
   return (
     <>
-      <form className="search" onSubmit={(e) => { e.preventDefault(); setPid(pidFromText(q) || q.trim().toUpperCase()); }}>
+      <form className="search" onSubmit={(e) => { e.preventDefault(); open(pidFromText(q) || q.trim().toUpperCase()); }}>
         <label htmlFor="pid">ເປີດປຶ້ມດ້ວຍເລກທີ</label>
-        <input id="pid" className="mono" value={q} onChange={(e) => setQ(e.target.value)} placeholder="MC-2026-123456" required />
+        <input id="pid" className="mono" value={q} onChange={(e) => { setQ(e.target.value); if (pid) setPid(null); }}
+          placeholder="MC-2026-123456 ຫຼື ຊື່" required autoComplete="off" />
         <button className="btn primary">ເປີດປຶ້ມ</button>
         <button type="button" className="btn scan-btn" onClick={() => setScanning(true)}>📷 ສະແກນ QR</button>
       </form>
-      {scanning && <Scanner onScan={onScan} onClose={closeScanner} />}
-      {pid ? <BookView key={pid} pid={pid} me={me} onError={onError} /> : (
-        <p className="empty">ຂໍເລກທີປຶ້ມຈາກຄົນເຈັບ. ທ່ານຈະເຫັນພຽງຂໍ້ມູນທີ່ຄົນເຈັບເປີດສິດໃຫ້.</p>
-      )}
+      {scanning && <Scanner onScan={open} onClose={closeScanner} />}
+      {pid ? (
+        <>
+          <button className="link back" onClick={() => { setPid(null); setQ(""); }}>← ປຶ້ມທີ່ເປີດຫຼ້າສຸດ</button>
+          <BookView key={pid} pid={pid} me={me} onError={onError} />
+        </>
+      ) : <RecentBooks filter={q} onOpen={open} />}
     </>
   );
 }

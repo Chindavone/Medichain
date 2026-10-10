@@ -344,3 +344,20 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .viewfinder .frame::after { content: ""; position: absolute; left: 6%; right: 6%; height: 2px; background: var(--stamp); top: 10%; animation: sweep 1.8s ease-in-out infinite alternate; }
 }
 @keyframes sweep { to { top: 88%; } }
+
+/* ---------- recent books (staff) ---------- */
+.recent { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.recent button {
+  width: 100%; text-align: left; display: grid; gap: 2px; padding: 12px 14px; cursor: pointer;
+  background: #fff; border: 1.5px solid var(--rule); border-left: 4px solid var(--cover); border-radius: 4px;
+}
+.recent button:hover { background: #f5f7fc; }
+.recent button.no-access { border-left-color: #c9ccd6; }
+.recent button.no-access .recent-name { color: var(--muted); font-weight: 500; }
+.recent-name { font: 700 16px var(--display); color: var(--cover); }
+.recent .status { margin-top: 4px; }
+@media (max-width: 640px) {
+  .search label { flex: 1 1 100%; }
+  .search input { flex: 1 1 100%; max-width: none; }
+  .search .btn { flex: 1; }
+}

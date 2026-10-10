@@ -10,6 +10,7 @@ const ABI = [
   "function roleOf(address) view returns (uint8)",
   "function patientOf(bytes32) view returns (address)",
   "function hasAccess(address patient, address who, uint8 scope) view returns (bool)",
+  "function grants(address patient, address grantee) view returns (uint8 scopes, uint64 expires)",
 ];
 
 const SCHEMA = `
@@ -193,6 +194,26 @@ function createApp({ pool, provider, contractAddress, chainId = 31337, dataKey, 
   }));
 
   // FR-06: audit trail for the patient themself. Actors and actions only, no medical content.
+  // Books this wallet opened or wrote in, newest first. Names only for books it can still access.
+  app.get("/api/recent", auth, route(async (req, res) => {
+    const { rows } = await pool.query(
+      `select pid, max(at) as last_at, count(*) filter (where action in ('add_record','correct_record')) as writes
+       from audit where actor = $1 and pid is not null and action in ('view_book','add_record','correct_record')
+       group by pid order by last_at desc limit 30`, [req.address]);
+    const out = await Promise.all(rows.map(async (r) => {
+      const patient = await loadPatient(r.pid);
+      if (!patient || patient.wallet === req.address) return null;
+      const scopes = await scopesFor(patient, req.address);
+      const grant = scopes ? await contract.grants(patient.wallet, req.address) : null;
+      return {
+        pid: r.pid, lastAt: r.last_at, writes: Number(r.writes), scopes,
+        expires: grant ? Number(grant.expires) : null,
+        name: scopes ? JSON.parse(decrypt(patient.profile)).name : null,
+      };
+    }));
+    res.json(out.filter(Boolean));
+  }));
+
   app.get("/api/patients/:pid/audit", auth, route(async (req, res) => {
     const patient = await loadPatient(req.params.pid);
     if (!patient || patient.wallet !== req.address) throw new HttpError(403, "ສະເພາະຄົນເຈັບເທົ່ານັ້ນທີ່ເບິ່ງປະຫວັດການເຂົ້າເຖິງນີ້ໄດ້.");
