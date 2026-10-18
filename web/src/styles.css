@@ -367,3 +367,7 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .landing-tools .btn { font-size: 14px; padding: 6px 14px; }
 .tool-msg { font-size: 13.5px; color: var(--ok); margin: 10px 0 0; font-weight: 500; }
 .tool-msg.bad { color: var(--stamp); }
+.wallet .bal { padding: 3px 10px; border-radius: 99px; background: #ffffff1f; font: 500 12.5px var(--mono); }
+.wallet .bal.low { background: var(--stamp); }
+.wallet .faucet { background: transparent; color: #fff; border-color: #ffffff80; }
+.wallet .faucet:hover:not(:disabled) { background: #ffffff1f; }

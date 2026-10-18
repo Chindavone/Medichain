@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, restoreSession, walletChainStatus, networkMessage, switchToHardhat,
-  isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, FAUCET, SCOPES, ROLE_LABEL, contractAddress,
+  isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, FAUCET, balanceOf, SCOPES, ROLE_LABEL, contractAddress,
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
 import Guide from "./Guide.jsx";
@@ -509,13 +509,23 @@ export default function App() {
     setFunding(true);
     setToolMsg({ text: "ກຳລັງສົ່ງ 0.1 ETH…" });
     try {
-      const address = await requestAccount();
+      const address = account || await requestAccount();
       const r = await api("/faucet", { method: "POST", body: { address } });
+      setBalance(Number(r.balance));
       setToolMsg({ text: `ໄດ້ຮັບ 0.1 ETH ແລ້ວ · ຍອດເງິນ ${Number(r.balance).toFixed(2)} ETH (${short(address)})` });
     } catch (e) {
-      setToolMsg({ bad: true, text: isRejection(e) ? "ຍົກເລີກການເຊື່ອມຕໍ່ໃນ MetaMask." : e.message });
+      const text = isRejection(e) ? "ຍົກເລີກການເຊື່ອມຕໍ່ໃນ MetaMask." : e.message;
+      setToolMsg({ bad: true, text });
+      if (account) setError(text); // dashboard has no landing message area
     } finally { setFunding(false); }
   };
+
+  // Header balance: refreshed on sign-in and whenever a transaction changes state (gas spent).
+  const [balance, setBalance] = useState(null);
+  useEffect(() => {
+    if (!account) return setBalance(null);
+    balanceOf(account).then(setBalance, () => setBalance(null));
+  }, [account, txr.txs]);
 
   useEffect(() => {
     if (!hasWallet()) return;
@@ -539,6 +549,16 @@ export default function App() {
             <div className="wallet">
               <span className={`net ${wrongNet ? "bad" : "ok"}`}>{wrongNet ? "Network ຜິດ" : `MediChain · ${CHAIN_ID}`}</span>
               <span className="addr mono" title={account}>{short(account)}</span>
+              {balance !== null && (
+                <span className={`bal ${balance < 0.01 ? "low" : ""}`} title="ຍອດເງິນ ETH ທົດລອງ ສຳລັບຈ່າຍຄ່າທຳນຽມ">
+                  {balance.toFixed(3)} ETH
+                </span>
+              )}
+              {FAUCET && (
+                <button className="btn small faucet" onClick={requestEth} disabled={funding}>
+                  {funding ? "ກຳລັງສົ່ງ…" : "ຂໍ 0.1 ETH"}
+                </button>
+              )}
               {me && <span className="role">{me.staff?.name || ROLE_LABEL[me.role]}{me.staff?.hospital ? ` · ${me.staff.hospital}` : ""}</span>}
               <button className="btn small" onClick={disconnect}>ຕັດການເຊື່ອມຕໍ່</button>
             </div>

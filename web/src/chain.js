@@ -42,6 +42,8 @@ export async function loadConfig() {
 }
 
 export const hasWallet = () => typeof window !== "undefined" && !!window.ethereum;
+// Balance as seen by this server's chain (not the wallet's RPC, which may point elsewhere).
+export const balanceOf = async (a) => Number(ethers.formatEther(await reader.runner.getBalance(a)));
 export const short = (a) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "");
 export const laoDate = (d) => new Date(d).toLocaleDateString("en-GB");
 export const laoDateTime = (d) => new Date(d).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
