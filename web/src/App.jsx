@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   api, assertNetwork, reader, writer, signIn, signOut, hasWallet, requestAccount, restoreSession, walletChainStatus, networkMessage, switchToHardhat,
-  isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, SCOPES, ROLE_LABEL, contractAddress,
+  isRejection, txError, short, laoDate, laoDateTime, hashText, idHash, CHAIN_ID, FAUCET, SCOPES, ROLE_LABEL, contractAddress,
 } from "./chain.js";
 import { BookView, CoverForm, TxContext, useTx, StaffContext } from "./Book.jsx";
 import Guide from "./Guide.jsx";
@@ -492,6 +492,31 @@ export default function App() {
 
   const disconnect = () => { signOut(account); setAccount(null); setMe(null); };
 
+  // Landing helpers: neither needs a sign-in.
+  const [toolMsg, setToolMsg] = useState(null);
+  const [funding, setFunding] = useState(false);
+  const addNetwork = async () => {
+    if (!hasWallet()) return setToolMsg({ bad: true, text: "ບໍ່ພົບ MetaMask. ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້ານີ້ຄືນ." });
+    try {
+      await switchToHardhat();
+      setToolMsg({ text: "MetaMask ຢູ່ Network MediChain ແລ້ວ." });
+    } catch (e) {
+      setToolMsg({ bad: true, text: isRejection(e) ? "ຍົກເລີກໃນ MetaMask." : e.message });
+    }
+  };
+  const requestEth = async () => {
+    if (!hasWallet()) return setToolMsg({ bad: true, text: "ບໍ່ພົບ MetaMask. ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້ານີ້ຄືນ." });
+    setFunding(true);
+    setToolMsg({ text: "ກຳລັງສົ່ງ 0.1 ETH…" });
+    try {
+      const address = await requestAccount();
+      const r = await api("/faucet", { method: "POST", body: { address } });
+      setToolMsg({ text: `ໄດ້ຮັບ 0.1 ETH ແລ້ວ · ຍອດເງິນ ${Number(r.balance).toFixed(2)} ETH (${short(address)})` });
+    } catch (e) {
+      setToolMsg({ bad: true, text: isRejection(e) ? "ຍົກເລີກການເຊື່ອມຕໍ່ໃນ MetaMask." : e.message });
+    } finally { setFunding(false); }
+  };
+
   useEffect(() => {
     if (!hasWallet()) return;
     const onAccounts = ([a]) => { setMe(null); setAccount(null); if (a) setError("ບັນຊີໃນ MetaMask ປ່ຽນແລ້ວ. ກົດເຊື່ອມຕໍ່ເພື່ອເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີໃໝ່."); };
@@ -551,6 +576,12 @@ export default function App() {
                 <h1 className="cover-title">ປຶ້ມຕິດຕາມ<br />ກວດພະຍາດ</h1>
                 <p className="lede">ປຶ້ມປະຫວັດການຮັກສາທີ່ທ່ານເປັນເຈົ້າຂອງ. ທ່ານເລືອກວ່າແພດຄົນໃດເບິ່ງໄດ້, ແລະ ທຸກບັນທຶກມີຕາປະທັບເທິງ Blockchain ທີ່ບໍ່ມີໃຜແກ້ໄຂໄດ້.</p>
                 <button className="btn primary big" onClick={connect} disabled={connecting}>{connecting ? "ກຳລັງເຊື່ອມຕໍ່…" : "ເຊື່ອມຕໍ່ MetaMask"}</button>
+                <div className="landing-tools">
+                  <button className="btn" onClick={addNetwork}>ເພີ່ມ Network MediChain</button>
+                  {FAUCET && <button className="btn" onClick={requestEth} disabled={funding}>{funding ? "ກຳລັງສົ່ງ…" : "ຂໍ 0.1 ETH ທົດລອງ"}</button>}
+                </div>
+                {toolMsg && <p className={`tool-msg ${toolMsg.bad ? "bad" : ""}`} role="status">{toolMsg.text}</p>}
+                {FAUCET && <p className="fine">ສຳລັບຄົນເຈັບໃໝ່: ເພີ່ມ Network → ຂໍ ETH ທົດລອງ (ໃຊ້ຈ່າຍຄ່າທຳນຽມ) → ເຊື່ອມຕໍ່.</p>}
                 {pidParam && <p className="notice qr-notice">ເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີແພດ ຫຼື ພະຍາບານ ເພື່ອເປີດປຶ້ມ <b className="mono">{pidParam}</b></p>}
                 <p><button className="link guide-link" onClick={() => setGuideOpen(true)}>ຄັ້ງທຳອິດ? ອ່ານຄູ່ມືການເຊື່ອມຕໍ່ ແລະ Flow ການໃຊ້ງານ</button></p>
                 <p className="fine">ສະພາບແວດລ້ອມທົດລອງ · ໃຊ້ຂໍ້ມູນຈຳລອງເທົ່ານັ້ນ · Contract <span className="mono">{short(contractAddress)}</span></p>

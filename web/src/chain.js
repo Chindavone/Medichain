@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 export let CHAIN_ID = null;
 export let reader = null;
 export let contractAddress = null;
+export let FAUCET = false;
 export const RPC_URL = `${location.origin}/rpc`;
 export const SCOPES = [
   { bit: 1, label: "ການກວດ ແລະ ຢາ", hint: "ອາການ, ວິນິດໄສ, ຢາ, ແຜນການຮັກສາ" },
@@ -36,6 +37,7 @@ export async function loadConfig() {
   const cfg = await res.json();
   CHAIN_ID = cfg.chainId;
   contractAddress = cfg.address;
+  FAUCET = !!cfg.faucet;
   reader = new ethers.Contract(cfg.address, ABI, new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID, { staticNetwork: true }));
 }
 

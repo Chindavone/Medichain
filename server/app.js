@@ -29,7 +29,12 @@ class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-function createApp({ pool, provider, contractAddress, chainId = 31337, dataKey, sessionSecret }) {
+// Test-ETH faucet: an unlocked dev-chain account (Anvil/Hardhat #9) tops patients up for gas.
+const FAUCET_AMOUNT = ethers.parseEther("0.1");
+const FAUCET_MAX_BALANCE = ethers.parseEther("1");
+const FAUCET_COOLDOWN_MS = 30e3;
+
+function createApp({ pool, provider, contractAddress, chainId = 31337, dataKey, sessionSecret, faucetAccount = null }) {
   const contract = new ethers.Contract(contractAddress, ABI, provider);
   const key = Buffer.from(dataKey, "hex");
   if (key.length !== 32) throw new Error("DATA_KEY must be 32 bytes hex");
@@ -92,7 +97,26 @@ function createApp({ pool, provider, contractAddress, chainId = 31337, dataKey, 
     createdAt: r.created_at, canonical: decrypt(r.body),
   });
 
-  app.get("/api/config", (_req, res) => res.json({ address: contractAddress, chainId }));
+  app.get("/api/config", (_req, res) => res.json({ address: contractAddress, chainId, faucet: !!faucetAccount }));
+
+  // ponytail: cooldown per address in process memory; add per-IP limits if this ever faces untrusted traffic
+  const faucetAt = new Map();
+  app.post("/api/faucet", route(async (req, res) => {
+    if (!faucetAccount) throw new HttpError(404, "ບໍ່ມີ Faucet ໃນລະບົບນີ້.");
+    if (!ethers.isAddress(req.body?.address)) throw new HttpError(400, "Wallet address ບໍ່ຖືກຕ້ອງ.");
+    const address = ethers.getAddress(req.body.address);
+    const wait = FAUCET_COOLDOWN_MS - (Date.now() - (faucetAt.get(address) || 0));
+    if (wait > 0) throw new HttpError(429, `ລໍອີກ ${Math.ceil(wait / 1000)} ວິນາທີ ແລ້ວຂໍໃໝ່.`);
+    if ((await provider.getBalance(address)) >= FAUCET_MAX_BALANCE)
+      throw new HttpError(400, "Wallet ນີ້ມີ ETH ທົດລອງພໍໃຊ້ແລ້ວ (1 ETH ຂຶ້ນໄປ).");
+    faucetAt.set(address, Date.now());
+    const signer = await provider.getSigner(faucetAccount);
+    const tx = await signer.sendTransaction({ to: address, value: FAUCET_AMOUNT });
+    const receipt = await tx.wait();
+    await audit(address, "faucet", null, tx.hash);
+    // Read at the receipt's block: a plain "latest" read can return ethers' cached pre-send value.
+    res.json({ txHash: tx.hash, balance: ethers.formatEther(await provider.getBalance(address, receipt.blockNumber)) });
+  }));
 
   app.get("/api/health", route(async (_req, res) => {
     const out = { db: false, chain: false };

@@ -361,3 +361,9 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .search input { flex: 1 1 100%; max-width: none; }
   .search .btn { flex: 1; }
 }
+
+/* ---------- landing helpers ---------- */
+.landing-tools { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.landing-tools .btn { font-size: 14px; padding: 6px 14px; }
+.tool-msg { font-size: 13.5px; color: var(--ok); margin: 10px 0 0; font-weight: 500; }
+.tool-msg.bad { color: var(--stamp); }

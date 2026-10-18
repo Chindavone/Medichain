@@ -59,7 +59,7 @@ MetaMask → ກົດຊື່ບັນຊີ → **Add account or hardware wal
 
 > ເປັນ key ມາດຕະຖານຂອງ Hardhat/Anvil ທີ່ທຸກຄົນຮູ້ — ໃຊ້ສະເພາະ Network ທົດລອງນີ້, ຫ້າມສົ່ງເງິນແທ້ເຂົ້າ.
 
-**ໃຊ້ wallet ຂອງຕົນເອງ:** ໄດ້ ແຕ່ຕ້ອງມີ ETH ທົດລອງຈ່າຍຄ່າທຳນຽມ. ຜູ້ດູແລ server ເຕີມໃຫ້ດ້ວຍ (ປ່ຽນ `<ADDRESS>`):
+**ໃຊ້ wallet ຂອງຕົນເອງ:** ໜ້າທຳອິດມີປຸ່ມ **ເພີ່ມ Network MediChain** ແລະ **ຂໍ 0.1 ETH ທົດລອງ** (ຂໍໄດ້ທຸກ 30 ວິນາທີ ຈົນ wallet ມີ 1 ETH; ສົ່ງຈາກບັນຊີທົດລອງ #9; ປິດດ້ວຍ `FAUCET=off`). ຫຼື ຜູ້ດູແລ server ເຕີມໃຫ້ເອງ (ປ່ຽນ `<ADDRESS>`):
 
 ```bash
 curl -s -X POST localhost/rpc -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"anvil_setBalance","params":["<ADDRESS>","0x56BC75E2D63100000"]}'
@@ -115,7 +115,7 @@ curl -s -X POST localhost/rpc -H 'content-type: application/json' -d '{"jsonrpc"
 |---|---|
 | "ບໍ່ພົບ MetaMask" | ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້າຄືນ. ໃນມືຖືໃຫ້ເປີດເວັບຜ່ານ browser ໃນແອັບ MetaMask. |
 | ແຖບແດງ "Network ຜິດ" | ກົດ **ສະຫຼັບ Network**. ລະບົບຈະບໍ່ສົ່ງທຸລະກຳໃນ Network ອື່ນ. |
-| MetaMask ສະແດງ "Network fee" ສີແດງ / ກົດ Confirm ບໍ່ໄດ້ | Wallet ບໍ່ມີ ETH ທົດລອງ — ໃຊ້ບັນຊີ #0–#5 ຫຼື ຂໍໃຫ້ຜູ້ດູແລເຕີມ. |
+| MetaMask ສະແດງ "Network fee" ສີແດງ / ກົດ Confirm ບໍ່ໄດ້ | Wallet ບໍ່ມີ ETH ທົດລອງ — ກົດ **ຂໍ 0.1 ETH ທົດລອງ** ໃນໜ້າທຳອິດ, ຫຼື ໃຊ້ບັນຊີ #0–#5. |
 | ແຖບແດງ "RPC ຊີ້ໄປ Blockchain ອື່ນ" / "already registered" | Network ໃນ MetaMask ມີ Chain ID 31337 ແຕ່ RPC ເປັນ `127.0.0.1:8545`. ກົດ **ແກ້ RPC** ຫຼື ແກ້ RPC URL ເປັນ `https://<domain>/rpc`. |
 | ທຸລະກຳຄ້າງ / nonce ຜິດ ຫຼັງ reset chain | MetaMask → Settings → Advanced → **Clear activity tab data**. |
 | "ທ່ານບໍ່ມີສິດເຂົ້າເຖິງປຶ້ມນີ້" | ຄົນເຈັບຍັງບໍ່ເປີດສິດ, ສິດໝົດອາຍຸ ຫຼື ຖືກຖອນແລ້ວ. |

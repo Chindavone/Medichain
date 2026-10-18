@@ -93,7 +93,7 @@ describe("MediChain API", function () {
     ctx = await deploy();
     const app = createApp({
       pool, provider: ethers.provider, contractAddress: await ctx.mc.getAddress(),
-      dataKey: "11".repeat(32), sessionSecret: "test",
+      dataKey: "11".repeat(32), sessionSecret: "test", faucetAccount: (await ethers.getSigners())[9].address,
     });
     server?.close();
     server = app.listen(0);
@@ -182,6 +182,17 @@ describe("MediChain API", function () {
     await call(`/staff/${ctx.doctor.address}`, { token: admin, method: "PUT", body: { name: "Dr A", hospitalId: h.body.id } });
     const list = (await call("/staff", { token: doc })).body;
     expect(list[0]).to.include({ name: "Dr A", hospital: "ໂຮງໝໍທົດລອງ", role: "doctor" });
+  });
+
+  it("faucet sends 0.1 ETH, refuses funded wallets and repeat requests", async () => {
+    const fresh = ethers.Wallet.createRandom().address;
+    const r = await call("/faucet", { method: "POST", body: { address: fresh } });
+    expect(r.status).to.equal(200);
+    expect(r.body.balance).to.equal("0.1");
+    expect(await ethers.provider.getBalance(fresh)).to.equal(ethers.parseEther("0.1"));
+    expect((await call("/faucet", { method: "POST", body: { address: fresh } })).status).to.equal(429);
+    expect((await call("/faucet", { method: "POST", body: { address: ctx.patient.address } })).status).to.equal(400);
+    expect((await call("/faucet", { method: "POST", body: { address: "nope" } })).status).to.equal(400);
   });
 
   it("stores medical data encrypted at rest", async () => {

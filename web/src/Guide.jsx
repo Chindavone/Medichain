@@ -46,7 +46,7 @@ const ROLES = [
 const TROUBLE = [
   ["ບໍ່ພົບ MetaMask", "ຕິດຕັ້ງ extension ແລ້ວໂຫຼດໜ້າຄືນ. ໃນມືຖືໃຫ້ເປີດເວັບຜ່ານ browser ໃນແອັບ MetaMask."],
   ["ແຖບແດງ “Network ຜິດ”", "ກົດ “ສະຫຼັບ Network”. ລະບົບບໍ່ສົ່ງທຸລະກຳໃນ Network ອື່ນ."],
-  ["“Network fee” ສີແດງ, ກົດ Confirm ບໍ່ໄດ້", "Wallet ບໍ່ມີ ETH ທົດລອງ — ໃຊ້ບັນຊີ #0–#5 ຫຼື ຂໍໃຫ້ຜູ້ດູແລເຕີມ."],
+  ["“Network fee” ສີແດງ, ກົດ Confirm ບໍ່ໄດ້", "Wallet ບໍ່ມີ ETH ທົດລອງ — ກົດ “ຂໍ 0.1 ETH ທົດລອງ” ໃນໜ້າທຳອິດ, ຫຼື ໃຊ້ບັນຊີ #0–#5."],
   ["“RPC ຊີ້ໄປ Blockchain ອື່ນ” ຫຼື “already registered”", "Network ໃນ MetaMask ມີ Chain ID ຖືກ ແຕ່ RPC ເປັນ 127.0.0.1:8545 (ເຄື່ອງຕົນເອງ). ກົດ “ແກ້ RPC” ຫຼື MetaMask → Networks → ແກ້ RPC URL ເປັນຄ່າໃນຂໍ້ 1 ຂ້າງເທິງ."],
   ["ທຸລະກຳຄ້າງ ຫຼັງ reset chain", "MetaMask → Settings → Advanced → Clear activity tab data."],
   ["“ທ່ານບໍ່ມີສິດເຂົ້າເຖິງປຶ້ມນີ້”", "ຄົນເຈັບຍັງບໍ່ເປີດສິດ, ສິດໝົດອາຍຸ ຫຼື ຖືກຖອນແລ້ວ."],
@@ -126,7 +126,7 @@ export default function Guide() {
             ))}
           </tbody>
         </table>
-        <p className="fine">ໃຊ້ wallet ຂອງຕົນເອງໄດ້ ແຕ່ຕ້ອງມີ ETH ທົດລອງ — ຂໍໃຫ້ຜູ້ດູແລລະບົບເຕີມໃຫ້. ແພດ/ພະຍາບານ ຕ້ອງໃຫ້ Admin ກຳນົດບົດບາດກ່ອນ.</p>
+        <p className="fine">ໃຊ້ wallet ຂອງຕົນເອງໄດ້ — ກົດ “ຂໍ 0.1 ETH ທົດລອງ” ໃນໜ້າທຳອິດ (ຂໍໄດ້ທຸກ 30 ວິນາທີ ຈົນມີ 1 ETH). ແພດ/ພະຍາບານ ຕ້ອງໃຫ້ Admin ກຳນົດບົດບາດກ່ອນ.</p>
       </section>
 
       <section className="card">
