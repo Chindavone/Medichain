@@ -3,6 +3,8 @@ WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web ./
+# The guide imports ../../contracts/MediChain.sol?raw (from /web/src).
+COPY contracts /contracts
 RUN npx vite build
 
 FROM nginx:1.27-alpine

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CHAIN_ID, RPC_URL, hasWallet, switchToHardhat } from "./chain.js";
+import ContractGuide from "./ContractGuide.jsx";
 
 // The end-to-end flow. `chain` names the contract call when the step writes to the blockchain.
 const FLOW = [
@@ -211,6 +212,8 @@ export default function Guide() {
         </div>
         <p className="fine">ຊື່, ວິນິດໄສ, ຢາ ແລະ ຜົນກວດ ບໍ່ເຄີຍຂຶ້ນ Blockchain — ເທິງ chain ມີພຽງ wallet, ສິດ ແລະ hash.</p>
       </section>
+
+      <ContractGuide />
 
       <section className="card">
         <h2>1. ເພີ່ມ Network ໃນ MetaMask</h2>
