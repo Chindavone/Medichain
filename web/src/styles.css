@@ -371,3 +371,27 @@ legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .wallet .bal.low { background: var(--stamp); }
 .wallet .faucet { background: transparent; color: #fff; border-color: #ffffff80; }
 .wallet .faucet:hover:not(:disabled) { background: #ffffff1f; }
+
+/* ---------- infrastructure diagram ---------- */
+.infra-wrap { overflow-x: auto; margin: 8px -4px 16px; padding: 0 4px; }
+.infra { display: block; width: 100%; min-width: 760px; height: auto; font-family: var(--body); }
+.iz { fill: #fbf6f7; stroke: #d9c9cc; stroke-width: 1.5; stroke-dasharray: 6 5; }
+.iz-docker { fill: #f4f6fb; stroke: #b9c3dc; }
+.iz-label { font: 600 12.5px var(--body); fill: var(--muted); text-anchor: middle; }
+.ib rect { fill: #fff; stroke: var(--cover); stroke-width: 2; }
+.ib-title { font: 700 14px var(--display); fill: var(--ink); text-anchor: middle; }
+.ib-sub { font: 400 11.5px var(--body); fill: var(--muted); text-anchor: middle; }
+.ib-edge rect { stroke: #e08a2c; }
+.ib-data rect { stroke: var(--ok); }
+.ib-chain rect { stroke: var(--stamp); }
+.ia path { fill: none; stroke: var(--cover); stroke-width: 2; }
+.ia.data path { stroke: var(--ok); }
+.ia.chain path { stroke: var(--stamp); }
+.ia-label { font: 600 11px var(--mono); fill: var(--ink); text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 4px; }
+.leg { display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; }
+.leg::before { content: ""; width: 18px; height: 3px; border-radius: 2px; background: var(--cover); }
+.leg.data::before { background: var(--ok); }
+.leg.chain::before { background: var(--stamp); }
+.paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 16px; }
+.paths .steps { font-size: 14px; }
+.table-wrap { overflow-x: auto; }

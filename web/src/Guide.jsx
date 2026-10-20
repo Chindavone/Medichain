@@ -66,6 +66,96 @@ function Copy({ value, label }) {
   );
 }
 
+/* ---------- Software infrastructure: where each request travels ---------- */
+function Box({ x, y, w, h, title, lines = [], tone = "cover" }) {
+  return (
+    <g className={`ib ib-${tone}`}>
+      <rect x={x} y={y} width={w} height={h} rx="6" />
+      <text x={x + w / 2} y={y + 24} className="ib-title">{title}</text>
+      {lines.map((l, i) => <text key={l} x={x + w / 2} y={y + 44 + i * 16} className="ib-sub">{l}</text>)}
+    </g>
+  );
+}
+const Arrow = ({ d, label, lx, ly, tone = "", dashed }) => (
+  <g className={`ia ${tone}`}>
+    <path d={d} markerEnd={`url(#ah${tone ? "-" + tone : ""})`} strokeDasharray={dashed ? "5 4" : undefined} />
+    {label && <text x={lx} y={ly} className="ia-label">{label}</text>}
+  </g>
+);
+
+function InfraDiagram() {
+  return (
+    <div className="infra-wrap">
+      <svg className="infra" viewBox="0 0 960 560" role="img"
+        aria-label="ຜູ້ໃຊ້ ແລະ MetaMask ເຊື່ອມຜ່ານ Cloudflare HTTPS ເຂົ້າ cloudflared ເທິງ server, ໄປ nginx ທີ່ແຍກ /api ໄປ Node.js API ແລະ /rpc ໄປ Anvil blockchain; API ເກັບຂໍ້ມູນເຂົ້າລະຫັດໃນ PostgreSQL ແລະ ກວດສິດກັບ blockchain">
+        <defs>
+          {[["ah", "var(--cover)"], ["ah-chain", "var(--stamp)"], ["ah-data", "var(--ok)"]].map(([id, c]) => (
+            <marker key={id} id={id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill={c} />
+            </marker>
+          ))}
+        </defs>
+
+        {/* zones */}
+        <rect x="16" y="60" width="210" height="330" rx="10" className="iz" />
+        <text x="121" y="84" className="iz-label">ອຸປະກອນຜູ້ໃຊ້</text>
+        <rect x="440" y="24" width="504" height="520" rx="10" className="iz" />
+        <text x="692" y="48" className="iz-label">Server · Ubuntu 22.04 · 202.137.130.114</text>
+        <rect x="612" y="64" width="324" height="468" rx="8" className="iz iz-docker" />
+        <text x="774" y="86" className="iz-label">Docker Compose</text>
+
+        {/* nodes */}
+        <Box x={36} y={110} w={170} h={74} title="ໜ້າເວັບ MediChain" lines={["React + ethers.js"]} />
+        <Box x={36} y={270} w={170} h={74} title="MetaMask" lines={["Wallet · ລົງນາມທຸລະກຳ"]} />
+        <Box x={262} y={176} w={150} h={94} title="Cloudflare" lines={["HTTPS + Tunnel", "medichain.ivo-"]} tone="edge" />
+        <text x="337" y="258" className="ib-sub">blockchain.org</text>
+        <Box x={460} y={182} w={130} h={74} title="cloudflared" lines={["systemd service"]} tone="edge" />
+        <Box x={628} y={182} w={292} h={74} title="web · nginx :80" lines={["React build · ແຍກ /api ແລະ /rpc"]} />
+        <Box x={628} y={312} w={140} h={90} title="api · Node.js" lines={[":4000 · Express", "ກວດສິດ · AES-256"]} tone="data" />
+        <Box x={780} y={312} w={140} h={90} title="chain · Anvil" lines={[":8545 · Chain 31337", "Smart Contract"]} tone="chain" />
+        <Box x={628} y={442} w={140} h={74} title="db · PostgreSQL" lines={["ຂໍ້ມູນເຂົ້າລະຫັດ"]} tone="data" />
+        <Box x={780} y={442} w={140} h={74} title="volume" lines={["chain state.json"]} tone="chain" />
+
+        {/* wires */}
+        <Arrow d="M121,184 L121,266" label="ຂໍລົງນາມ" lx={150} ly={230} />
+        <Arrow d="M206,147 C236,147 236,206 258,206" label="/ · /api" lx={240} ly={128} />
+        <Arrow d="M206,307 C236,307 236,244 258,244" label="/rpc" lx={236} ly={322} tone="chain" />
+        <Arrow d="M412,219 L456,219" label="Tunnel" lx={434} ly={210} />
+        <Arrow d="M590,219 L624,219" label=":80" lx={607} ly={210} />
+        <Arrow d="M698,256 L698,308" label="/api" lx={722} ly={288} tone="data" />
+        <Arrow d="M850,256 L850,308" label="/rpc" lx={874} ly={288} tone="chain" />
+        <Arrow d="M768,357 L776,357" tone="chain" />
+        <text x="774" y="420" className="ia-label">ກວດສິດ hasAccess()</text>
+        <Arrow d="M698,402 L698,438" tone="data" />
+        <Arrow d="M850,402 L850,438" tone="chain" dashed />
+      </svg>
+    </div>
+  );
+}
+
+const COMPONENTS = [
+  ["ໜ້າເວັບ", "React + Vite + ethers.js", "—", "ປຶ້ມຄົນເຈັບ, ສິດ, ສະແກນ QR, ກວດເອກະສານ"],
+  ["MetaMask", "Browser extension / ແອັບມືຖື", "—", "ເກັບ key, ລົງນາມເຂົ້າສູ່ລະບົບ ແລະ ທຸລະກຳ"],
+  ["Cloudflare Tunnel", "cloudflared (systemd)", "443 → 80", "HTTPS ສາທາລະນະ ໂດຍບໍ່ຕ້ອງເປີດ port ເທິງ server"],
+  ["web", "nginx 1.27", "80", "ສົ່ງໜ້າເວັບ, proxy /api ແລະ /rpc"],
+  ["api", "Node.js 22 + Express", "4000", "ຢືນຢັນລາຍເຊັນ, ກວດສິດເທິງ chain ທຸກຄັ້ງ, ເຂົ້າ/ຖອດລະຫັດ, audit log, faucet"],
+  ["db", "PostgreSQL 16", "5432 (ພາຍໃນ)", "ຂໍ້ມູນປົກ ແລະ ບັນທຶກການກວດ (AES-256-GCM), ໂຮງໝໍ, ບຸກຄະລາກອນ"],
+  ["chain", "Anvil (Foundry) + Solidity", "8545 (ພາຍໃນ)", "ບົດບາດ, ສິດ, hash ຂອງເລກປຶ້ມ ແລະ ບັນທຶກ; ເກັບ state ລົງ disk"],
+];
+
+const PATHS = [
+  ["ທ່ານໝໍເປີດປຶ້ມ", [
+    "ໜ້າເວັບ → Cloudflare → nginx → api: GET /api/patients/MC-…",
+    "api ຖາມ chain: hasAccess(ຄົນເຈັບ, ທ່ານໝໍ, ປະເພດຂໍ້ມູນ)",
+    "ມີສິດ → ອ່ານ db ແລ້ວຖອດລະຫັດ → ສົ່ງສະເພາະປະເພດທີ່ໄດ້ຮັບອະນຸຍາດ · ບໍ່ມີສິດ → 403",
+  ]],
+  ["ທ່ານໝໍບັນທຶກການກວດ", [
+    "api ເຂົ້າລະຫັດບັນທຶກ ເກັບລົງ db ແລະ ຄິດໄລ່ hash",
+    "MetaMask ລົງນາມ anchorRecord(hash) → /rpc → chain",
+    "ໜ້າເວັບອ່ານ chain ຢືນຢັນ → ສະແດງຕາປະທັບແດງ",
+  ]],
+];
+
 export default function Guide() {
   const [netMsg, setNetMsg] = useState(null);
   const addNetwork = async () => {
@@ -96,6 +186,30 @@ export default function Guide() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="card">
+        <h2>Software Infrastructure</h2>
+        <p className="fine">
+          <span className="leg web">ການເຊື່ອມຕໍ່ເວັບ</span> <span className="leg data">ຂໍ້ມູນທາງການແພດ (off-chain, ເຂົ້າລະຫັດ)</span>{" "}
+          <span className="leg chain">Blockchain (on-chain: ສິດ ແລະ hash)</span>
+        </p>
+        <InfraDiagram />
+        <div className="paths">
+          {PATHS.map(([title, steps]) => (
+            <div key={title}>
+              <h3>{title}</h3>
+              <ol className="steps">{steps.map((t) => <li key={t}>{t}</li>)}</ol>
+            </div>
+          ))}
+        </div>
+        <div className="table-wrap">
+          <table className="audit">
+            <thead><tr><th>ສ່ວນປະກອບ</th><th>ເຕັກໂນໂລຊີ</th><th>Port</th><th>ໜ້າທີ່</th></tr></thead>
+            <tbody>{COMPONENTS.map(([n, t, p, r]) => <tr key={n}><td><b>{n}</b></td><td>{t}</td><td className="mono small">{p}</td><td>{r}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <p className="fine">ຊື່, ວິນິດໄສ, ຢາ ແລະ ຜົນກວດ ບໍ່ເຄີຍຂຶ້ນ Blockchain — ເທິງ chain ມີພຽງ wallet, ສິດ ແລະ hash.</p>
       </section>
 
       <section className="card">
